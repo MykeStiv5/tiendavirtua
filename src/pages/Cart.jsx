@@ -17,11 +17,8 @@ export default function Cart({ params }) {
   const [trap, setTrap] = useState(''); // campo señuelo antispam
   const [startedAt] = useState(() => Date.now());
 
-  // Costo de envío: lo calcula Supabase (función quote_shipping) según la ciudad y el subtotal
-  const [shipping, setShipping] = useState(null); // null = aún sin calcular
-  const [quoting, setQuoting] = useState(false);
-
-  const total = subtotal + (shipping ?? 0);
+  // Envío gratis en todos los pedidos: el total es solo la suma de los productos
+  const total = subtotal;
   const failed = params.get('status') === 'failure';
 
   // Si el comprador inició sesión, adelanta su correo y nombre
@@ -36,39 +33,6 @@ export default function Cart({ params }) {
       }));
     });
   }, []);
-
-  useEffect(() => {
-    const city = client.city.trim();
-    if (!city || subtotal <= 0) {
-      setShipping(null);
-      setQuoting(false);
-      return undefined;
-    }
-
-    let cancelled = false;
-    setQuoting(true);
-    const timer = setTimeout(async () => {
-      const { data, error: rpcError } = await supabase.rpc('quote_shipping', {
-        p_city: city,
-        p_subtotal: subtotal,
-      });
-      if (cancelled) return;
-      setShipping(rpcError ? null : Number(data));
-      setQuoting(false);
-    }, 400);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [client.city, subtotal]);
-
-  const shippingLabel = () => {
-    if (!client.city.trim()) return 'Escribe tu ciudad';
-    if (quoting) return 'Calculando…';
-    if (shipping === null) return 'Se confirma al despachar';
-    return shipping === 0 ? 'GRATIS' : formatCOP(shipping);
-  };
 
   const onField = (event) => setClient({ ...client, [event.target.name]: event.target.value });
 
@@ -118,7 +82,7 @@ export default function Cart({ params }) {
           <h2>TU BOLSA [{count}]</h2>
         </div>
 
-        <p>Envíos gratuitos en compras superiores a $300.000 COP.</p>
+        <p>Envío gratis en todos tus pedidos.</p>
       </header>
 
       {failed && (
@@ -174,9 +138,7 @@ export default function Cart({ params }) {
 
             <div className="summary-row">
               <span>Envío</span>
-              <strong className={shipping === 0 && !quoting ? 'success-text' : ''}>
-                {shippingLabel()}
-              </strong>
+              <strong className="success-text">GRATIS</strong>
             </div>
 
             <div className="summary-row summary-row--total">

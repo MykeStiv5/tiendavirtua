@@ -8,7 +8,6 @@ import { getAdminClient, ORDER_SELECT } from './_orders.js';
 const DEFAULT_SITE_URL = 'https://tiendavirtuafi.vercel.app';
 const MIN_UNIT_PRICE_COP = 2000; // el precio unitario debe ser MAYOR a este valor
 const MAX_INSTALLMENTS = 36;
-const MAX_SHIPPING_COP = 200000;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 class ValidationError extends Error {
@@ -82,13 +81,6 @@ export function buildPreferenceBody(input = {}, options = {}) {
 
   const items = normalizeItems(input.items);
 
-  // El envío viaja como un ítem más (COP sin decimales)
-  const shipping = Math.max(0, Math.round(Number(input.shipping) || 0));
-  if (shipping > MAX_SHIPPING_COP) throw new ValidationError('Costo de envío inválido');
-  if (shipping > 0) {
-    items.push({ id: 'envio', title: 'Envío', quantity: 1, unit_price: shipping, currency_id: 'COP' });
-  }
-
   if (input.total !== undefined && input.total !== null) {
     const computed = items.reduce((sum, i) => sum + i.unit_price * i.quantity, 0);
     if (computed !== Math.round(Number(input.total))) {
@@ -96,8 +88,7 @@ export function buildPreferenceBody(input = {}, options = {}) {
       console.error('[Mercado Pago] Total no coincide', {
         orderId,
         totalPedido: input.total,
-        envio: shipping,
-        sumaItemsMasEnvio: computed,
+        sumaItems: computed,
         items: items.map((i) => ({ id: i.id, unit_price: i.unit_price, quantity: i.quantity })),
       });
       throw new ValidationError('El total no coincide con los productos del carrito');
@@ -171,7 +162,7 @@ export async function createPreference(input, token, options = {}) {
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
- * Crea la preferencia leyendo el pedido desde Supabase: productos, precios, envío y total salen de la
+ * Crea la preferencia leyendo el pedido desde Supabase: productos, precios y total salen de la
  * base de datos, no del navegador. Así nadie puede pagar un precio distinto al real.
  */
 export async function createPreferenceForOrder(orderId, token, options = {}) {
@@ -195,12 +186,11 @@ export async function createPreferenceForOrder(orderId, token, options = {}) {
     {
       orderId: order.id,
       total: order.total,
-      shipping: order.shipping_cost,
       payerEmail: order.client_info?.email,
       payerName: order.client_info?.name,
       items: (order.order_items || []).map((i) => ({
         productId: i.product_id,
-        name: i.products?.name || 'Producto',
+        name: i.title || i.products?.name || 'Producto',
         size: i.size,
         quantity: i.quantity,
         price: i.price,
