@@ -190,7 +190,7 @@ export async function createPreferenceForOrder(orderId, token, options = {}) {
       payerName: order.client_info?.name,
       items: (order.order_items || []).map((i) => ({
         productId: i.product_id,
-        name: i.title || i.products?.name || 'Producto',
+                name: i.products?.name || 'Producto',
         size: i.size,
         quantity: i.quantity,
         price: i.price,
