@@ -92,6 +92,14 @@ export function buildPreferenceBody(input = {}, options = {}) {
   if (input.total !== undefined && input.total !== null) {
     const computed = items.reduce((sum, i) => sum + i.unit_price * i.quantity, 0);
     if (computed !== Math.round(Number(input.total))) {
+      // El detalle queda en los logs de Vercel (Deployments → Functions) para encontrar la causa
+      console.error('[Mercado Pago] Total no coincide', {
+        orderId,
+        totalPedido: input.total,
+        envio: shipping,
+        sumaItemsMasEnvio: computed,
+        items: items.map((i) => ({ id: i.id, unit_price: i.unit_price, quantity: i.quantity })),
+      });
       throw new ValidationError('El total no coincide con los productos del carrito');
     }
   }
