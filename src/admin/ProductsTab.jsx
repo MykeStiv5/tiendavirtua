@@ -1,11 +1,25 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import { deleteProduct, saveProduct, uploadProductImage } from '../services/admin';
-import { formatNumber, parseSizes } from '../lib/format';
+import { formatNumber } from '../lib/format';
 import { SIZES } from '../config';
 
 const EMPTY = { name: '', description: '', price: '', category_id: '', sizes: [...SIZES], image_url: '', stock: 0 };
 const LOW_STOCK = 5;
+
+// Convierte "36, 37, 38.5" o "S M L" en una lista sin repetidos (si son números, las ordena)
+function parseSizes(text) {
+  const unique = [
+    ...new Set(
+      String(text)
+        .split(/[\s,;]+/)
+        .map((s) => s.trim().toUpperCase())
+        .filter(Boolean),
+    ),
+  ];
+  const allNumeric = unique.every((s) => /^\d+(\.\d+)?$/.test(s));
+  return allNumeric ? unique.sort((a, b) => parseFloat(a) - parseFloat(b)) : unique;
+}
 
 export default function ProductsTab({ products, categories, onChange, createRequest }) {
   const [query, setQuery] = useState('');
