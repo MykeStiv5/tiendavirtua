@@ -1,0 +1,273 @@
+/* ============================================================
+   extra.css — SOLO elementos que no existían en tu diseño aprobado
+   (mensajes, formulario de checkout, login, modales y acciones del admin).
+   No sobrescribe ninguna regla de style.css; reutiliza tus variables.
+   ============================================================ */
+
+/* Mensajes y estados */
+
+.state-message {
+  margin: 40px 0;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.empty-state {
+  padding-top: 40px;
+}
+
+.form-message {
+  margin: 16px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--color-line);
+  background: var(--color-soft);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.form-message--error {
+  color: var(--color-error);
+  border-color: var(--color-error);
+  background: #fff5f4;
+}
+
+.form-message--success {
+  color: #008957;
+  border-color: var(--color-success);
+  background: #effcf7;
+}
+
+.button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Campos de formulario */
+
+.field {
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field > span {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.field input:not([type="checkbox"]):not([type="file"]),
+.field select,
+.field textarea {
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid var(--color-line);
+  outline: none;
+  background: var(--color-white);
+  font-size: 13px;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: var(--color-ink);
+}
+
+.checkout-form {
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-line);
+}
+
+/* Login del admin */
+
+.auth-screen {
+  min-height: 100vh;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: #f4f4f2;
+}
+
+.auth-card {
+  width: min(420px, 100%);
+  padding: 36px;
+  border: 1px solid var(--color-line);
+  background: var(--color-white);
+}
+
+.auth-card h2 {
+  margin: 22px 0 26px;
+  font-family: var(--font-display);
+  font-size: 28px;
+  letter-spacing: -0.05em;
+}
+
+.auth-card p {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+/* Modal */
+
+.modal {
+  padding: 24px;
+  position: fixed;
+  z-index: 100;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 55%);
+}
+
+.modal__box {
+  width: min(560px, 100%);
+  max-height: calc(100vh - 48px);
+  padding: 28px;
+  overflow-y: auto;
+  background: var(--color-white);
+}
+
+.modal__header {
+  margin-bottom: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modal__header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 20px;
+}
+
+.modal__header button {
+  font-size: 26px;
+}
+
+/* Formularios del admin */
+
+.admin-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.admin-form__preview {
+  width: 120px;
+  margin-bottom: 16px;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+}
+
+.check-row {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.check-row label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* Tablas del admin */
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.table-action {
+  padding: 7px 10px;
+  border: 1px solid var(--color-line);
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.table-action:hover:not(:disabled) {
+  color: var(--color-white);
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+}
+
+.table-action:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.table-action--danger {
+  color: var(--color-error);
+}
+
+.admin-select {
+  min-width: 120px;
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--color-line);
+  outline: none;
+  background: var(--color-white);
+  font-size: 10px;
+}
+
+.admin-table--orders {
+  min-width: 1050px;
+}
+
+.admin-table .muted {
+  color: var(--color-muted);
+  font-size: 9px;
+  line-height: 1.6;
+}
+
+.settings-panel {
+  padding: 28px;
+  font-size: 13px;
+}
+
+.settings-panel p {
+  margin-bottom: 20px;
+}
+
+/* Menú móvil (el botón hamburguesa ya existía en tu diseño) */
+
+.navigation__mobile-only {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .navigation.is-open {
+    padding: 8px 16px 16px;
+    position: absolute;
+    top: 64px;
+    right: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    border-bottom: 1px solid var(--color-line);
+    background: var(--color-white);
+  }
+
+  .navigation.is-open a {
+    padding: 16px 0;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .navigation.is-open .navigation__mobile-only {
+    display: block;
+  }
+}
+
+@media (max-width: 560px) {
+  .admin-form__row {
+    grid-template-columns: 1fr;
+  }
+}
