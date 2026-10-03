@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useCart } from '../context/CartContext';
 import { createOrder, buildWhatsAppUrl } from '../services/orders';
 import { startMercadoPagoCheckout } from '../services/mercadopago';
 import { formatCOP } from '../lib/format';
-import { FREE_SHIPPING_FROM } from '../config';
+import { supabase } from '../lib/supabase';
+import { looksLikeBot } from '../lib/antispam';
+import Honeypot from '../components/Honeypot';
 
 const EMPTY_CLIENT = { name: '', phone: '', email: '', address: '', city: '' };
 
@@ -12,10 +14,61 @@ export default function Cart({ params }) {
   const [client, setClient] = useState(EMPTY_CLIENT);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [trap, setTrap] = useState(''); // campo señuelo antispam
+  const [startedAt] = useState(() => Date.now());
 
-  const total = subtotal;
-  const freeShipping = subtotal >= FREE_SHIPPING_FROM;
+  // Costo de envío: lo calcula Supabase (función quote_shipping) según la ciudad y el subtotal
+  const [shipping, setShipping] = useState(null); // null = aún sin calcular
+  const [quoting, setQuoting] = useState(false);
+
+  const total = subtotal + (shipping ?? 0);
   const failed = params.get('status') === 'failure';
+
+  // Si el comprador inició sesión, adelanta su correo y nombre
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      const user = data.session?.user;
+      if (!user) return;
+      setClient((current) => ({
+        ...current,
+        email: current.email || user.email || '',
+        name: current.name || user.user_metadata?.name || '',
+      }));
+    });
+  }, []);
+
+  useEffect(() => {
+    const city = client.city.trim();
+    if (!city || subtotal <= 0) {
+      setShipping(null);
+      setQuoting(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    setQuoting(true);
+    const timer = setTimeout(async () => {
+      const { data, error: rpcError } = await supabase.rpc('quote_shipping', {
+        p_city: city,
+        p_subtotal: subtotal,
+      });
+      if (cancelled) return;
+      setShipping(rpcError ? null : Number(data));
+      setQuoting(false);
+    }, 400);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [client.city, subtotal]);
+
+  const shippingLabel = () => {
+    if (!client.city.trim()) return 'Escribe tu ciudad';
+    if (quoting) return 'Calculando…';
+    if (shipping === null) return 'Se confirma al despachar';
+    return shipping === 0 ? 'GRATIS' : formatCOP(shipping);
+  };
 
   const onField = (event) => setClient({ ...client, [event.target.name]: event.target.value });
 
@@ -23,6 +76,11 @@ export default function Cart({ params }) {
   const handlePay = async (event) => {
     event.preventDefault();
     setError('');
+
+    if (looksLikeBot(trap, startedAt)) {
+      if (!trap) setError('Espera un par de segundos e inténtalo de nuevo.');
+      return;
+    }
 
     if (!client.email || !client.address || !client.city) {
       setError('Completa email, dirección y ciudad para pagar en línea.');
@@ -34,7 +92,7 @@ export default function Cart({ params }) {
       // 1) Guarda el pedido en Supabase con estado "Pendiente"
       const order = await createOrder(client, items);
       // 2) Inicia el checkout de Mercado Pago (redirige al init_point)
-      await startMercadoPagoCheckout({ items, total: order.total, orderId: order.id });
+      await startMercadoPagoCheckout({ orderId: order.id });
     } catch (err) {
       console.error(err);
       setError(err.message || 'No pudimos iniciar el pago. Intenta de nuevo.');
@@ -116,8 +174,8 @@ export default function Cart({ params }) {
 
             <div className="summary-row">
               <span>Envío</span>
-              <strong className={freeShipping ? 'success-text' : ''}>
-                {freeShipping ? 'GRATIS' : 'Se confirma al despachar'}
+              <strong className={shipping === 0 && !quoting ? 'success-text' : ''}>
+                {shippingLabel()}
               </strong>
             </div>
 
@@ -127,6 +185,7 @@ export default function Cart({ params }) {
             </div>
 
             <form className="checkout-form" onSubmit={handlePay}>
+              <Honeypot value={trap} onChange={setTrap} />
               <label className="field">
                 <span>NOMBRE COMPLETO</span>
                 <input name="name" value={client.name} onChange={onField} required autoComplete="name" />
@@ -137,7 +196,7 @@ export default function Cart({ params }) {
               </label>
               <label className="field">
                 <span>EMAIL</span>
-                <input name="email" type="email" value={client.email} onChange={onField} autoComplete="email" />
+                <input name="email" type="email" value={client.email} onChange={onField} required autoComplete="email" />
               </label>
               <label className="field">
                 <span>DIRECCIÓN</span>
@@ -145,7 +204,15 @@ export default function Cart({ params }) {
               </label>
               <label className="field">
                 <span>CIUDAD</span>
-                <input name="city" value={client.city} onChange={onField} autoComplete="address-level2" />
+                <input name="city" value={client.city} onChange={onField} autoComplete="address-level2" list="ciudades" />
+                <datalist id="ciudades">
+                  <option value="Bogotá" />
+                  <option value="Medellín" />
+                  <option value="Cali" />
+                  <option value="Barranquilla" />
+                  <option value="Cartagena" />
+                  <option value="Bucaramanga" />
+                </datalist>
               </label>
 
               {error && <p className="form-message form-message--error">{error}</p>}

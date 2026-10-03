@@ -81,10 +81,14 @@ export async function fetchOrders() {
   return data;
 }
 
-export async function updateOrder(id, { status, tracking_guide }) {
+export async function updateOrder(id, { status, tracking_guide, refund_note }) {
   const { error } = await supabase
     .from('orders')
-    .update({ status, tracking_guide: tracking_guide || null })
+    .update({
+      status,
+      tracking_guide: tracking_guide || null,
+      refund_note: status === 'Reembolsado' ? refund_note || null : null,
+    })
     .eq('id', id);
   if (error) throw error;
 }

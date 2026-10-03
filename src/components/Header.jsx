@@ -34,6 +34,7 @@ export default function Header() {
         <a href="#productos" onClick={close}>MUJER</a>
         <a href="#productos" onClick={close}>ACCESORIOS</a>
         <a href="#/track" className="navigation__mobile-only" onClick={close}>RASTREAR PEDIDO</a>
+        <a href="#/account" className="navigation__mobile-only" onClick={close}>MI CUENTA</a>
       </nav>
 
       <div className="header__actions">
@@ -54,6 +55,10 @@ export default function Header() {
 
         <a href="#/track" className="header-action header-action--desktop">
           RASTREAR
+        </a>
+
+        <a href="#/account" className="header-action header-action--desktop">
+          MI CUENTA
         </a>
 
         <a href="#/cart" className="header-action bag-button">

@@ -271,3 +271,61 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Compartir producto (tienda) */
+
+.share-row {
+  margin: 10px 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.share-row .table-action {
+  padding: 10px 14px;
+  display: inline-block;
+  background: var(--color-white);
+  font-size: 11px;
+}
+
+/* Filtros y avisos del admin */
+
+.admin-filters {
+  padding: 0 0 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.admin-filters .table-action {
+  padding: 9px 14px;
+  font-size: 10px;
+  background: var(--color-white);
+}
+
+.admin-filters .table-action--active {
+  color: var(--color-white);
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+}
+
+.admin-note {
+  margin: 0 0 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-line);
+  background: var(--color-soft);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.admin-inline-input {
+  width: 100%;
+  min-width: 160px;
+  height: 34px;
+  margin-top: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--color-line);
+  outline: none;
+  background: var(--color-white);
+  font-size: 10px;
+}

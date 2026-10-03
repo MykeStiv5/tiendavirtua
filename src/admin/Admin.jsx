@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, supabaseConfigured } from '../lib/supabase';
 import { signIn, signOut, checkIsAdmin } from '../services/admin';
 import AdminPanel from './AdminPanel';
 
@@ -56,9 +56,20 @@ function LoginForm() {
     setBusy(true);
     setError('');
     try {
-      await signIn(email, password);
+      // Si Supabase no responde en 15 s, avisamos en vez de quedarnos "pensando"
+      await Promise.race([
+        signIn(email, password),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('TIMEOUT')), 15000)),
+      ]);
     } catch (err) {
-      setError('Correo o contraseña incorrectos.');
+      console.error('[AREA 11] Error de login:', err);
+      if (err.message === 'TIMEOUT') {
+        setError('Supabase no responde. Revisa VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY en tu archivo .env y reinicia npm run dev.');
+      } else if (/invalid login credentials/i.test(err.message)) {
+        setError('Correo o contraseña incorrectos.');
+      } else {
+        setError(err.message || 'No se pudo iniciar sesión.');
+      }
     } finally {
       setBusy(false);
     }
@@ -72,6 +83,13 @@ function LoginForm() {
           <strong>11</strong>
         </a>
         <h2>ADMIN SPACE</h2>
+
+        {!supabaseConfigured && (
+          <p className="form-message form-message--error">
+            Falta configurar Supabase: crea el archivo <strong>.env</strong> (copia de .env.example) con
+            VITE_SUPABASE_URL y VITE_SUPABASE_ANON_KEY, y reinicia <strong>npm run dev</strong>.
+          </p>
+        )}
 
         <label className="field">
           <span>EMAIL</span>

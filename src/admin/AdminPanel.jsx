@@ -1,14 +1,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fetchCategories, fetchProducts } from '../services/catalog';
 import { fetchOrders, signOut } from '../services/admin';
+import { supabase } from '../lib/supabase';
 import ProductsTab from './ProductsTab';
 import CategoriesTab from './CategoriesTab';
 import OrdersTab from './OrdersTab';
+import AccountsTab from './AccountsTab';
 
 const TABS = [
   { id: 'products', icon: '▦', label: 'PRODUCTOS', title: 'PRODUCTOS' },
   { id: 'categories', icon: '□', label: 'CATEGORÍAS', title: 'CATEGORÍAS' },
   { id: 'orders', icon: '▤', label: 'PEDIDOS', title: 'PEDIDOS' },
+  { id: 'accounts', icon: '◉', label: 'CUENTAS', title: 'CUENTAS Y RECUPERACIÓN' },
   { id: 'settings', icon: '⚙', label: 'CONFIGURACIÓN', title: 'CONFIGURACIÓN' },
 ];
 
@@ -17,15 +20,23 @@ export default function AdminPanel({ user }) {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [pendingRecoveries, setPendingRecoveries] = useState(0);
   const [error, setError] = useState('');
   const [createRequest, setCreateRequest] = useState(0); // el botón del header abre el formulario de la pestaña
 
   const reload = useCallback(async () => {
     try {
-      const [p, c, o] = await Promise.all([fetchProducts(), fetchCategories(), fetchOrders()]);
+      const [p, c, o, r] = await Promise.all([
+        fetchProducts(),
+        fetchCategories(),
+        fetchOrders(),
+        // Si aún no corriste la migración 3 esta consulta falla; no debe romper el panel
+        supabase.from('account_recovery_requests').select('id', { count: 'exact', head: true }).eq('status', 'Pendiente'),
+      ]);
       setProducts(p);
       setCategories(c);
       setOrders(o);
+      setPendingRecoveries(r.count ?? 0);
       setError('');
     } catch (err) {
       console.error(err);
@@ -65,6 +76,7 @@ export default function AdminPanel({ user }) {
               <span>{item.icon}</span>
               {item.label}
               {item.id === 'orders' && pendingOrders > 0 && <strong>{pendingOrders}</strong>}
+              {item.id === 'accounts' && pendingRecoveries > 0 && <strong>{pendingRecoveries}</strong>}
             </a>
           ))}
         </nav>
@@ -102,6 +114,7 @@ export default function AdminPanel({ user }) {
           <CategoriesTab categories={categories} products={products} onChange={reload} createRequest={createRequest} />
         )}
         {tab === 'orders' && <OrdersTab orders={orders} onChange={reload} />}
+        {tab === 'accounts' && <AccountsTab onChange={reload} />}
         {tab === 'settings' && (
           <section className="admin-panel settings-panel">
             <p><strong>Sesión:</strong> {user.email}</p>

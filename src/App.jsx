@@ -7,6 +7,7 @@ import Home from './pages/Home';
 import ProductPage from './pages/ProductPage';
 import Cart from './pages/Cart';
 import Track from './pages/Track';
+import Account from './pages/Account';
 import Admin from './admin/Admin';
 
 export default function App() {
@@ -29,6 +30,7 @@ export default function App() {
   let page;
   if (path === '/cart') page = <Cart params={params} />;
   else if (path === '/track') page = <Track params={params} />;
+  else if (path === '/account') page = <Account />;
   else if (path.startsWith('/product/')) page = <ProductPage id={path.split('/')[2]} />;
   else page = <Home />;
 

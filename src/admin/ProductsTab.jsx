@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import { deleteProduct, saveProduct, uploadProductImage } from '../services/admin';
-import { formatNumber } from '../lib/format';
+import { formatNumber, parseSizes } from '../lib/format';
 import { SIZES } from '../config';
 
 const EMPTY = { name: '', description: '', price: '', category_id: '', sizes: [...SIZES], image_url: '', stock: 0 };
@@ -141,13 +141,11 @@ export default function ProductsTab({ products, categories, onChange, createRequ
 
 function ProductForm({ product, categories, onClose, onSaved }) {
   const [form, setForm] = useState(product);
+  const [sizesText, setSizesText] = useState((product.sizes || []).join(', '));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
   const set = (name, value) => setForm((f) => ({ ...f, [name]: value }));
-
-  const toggleSize = (size) =>
-    set('sizes', form.sizes.includes(size) ? form.sizes.filter((s) => s !== size) : [...form.sizes, size]);
 
   const handleFile = async (event) => {
     const file = event.target.files?.[0];
@@ -165,13 +163,14 @@ function ProductForm({ product, categories, onClose, onSaved }) {
   // onSubmit: crea o actualiza según exista form.id
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (form.sizes.length === 0) {
-      setError('Selecciona al menos una talla.');
+    const sizes = parseSizes(sizesText);
+    if (sizes.length === 0) {
+      setError('Escribe al menos una talla (por ejemplo: 36, 37, 38).');
       return;
     }
     setBusy(true);
     try {
-      await saveProduct(form);
+      await saveProduct({ ...form, sizes });
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -214,17 +213,26 @@ function ProductForm({ product, categories, onClose, onSaved }) {
           </select>
         </label>
 
-        <div className="field">
-          <span>TALLAS</span>
+        <label className="field">
+          <span>TALLAS DE ESTE PRODUCTO (sepáralas con coma)</span>
+          <small className="muted" style={{ fontSize: 11 }}>
+            Cada producto tiene sus propias tallas: escríbelas tú. Tenis: 38, 39, 40 · con media talla: 38.5 · ropa: S, M, L.
+          </small>
+          <input
+            value={sizesText}
+            onChange={(e) => setSizesText(e.target.value)}
+            placeholder="Ej: 36, 37, 38, 38.5, 39, 40"
+            required
+          />
           <div className="check-row">
-            {SIZES.map((size) => (
-              <label key={size}>
-                <input type="checkbox" checked={form.sizes.includes(size)} onChange={() => toggleSize(size)} />
-                {size}
-              </label>
-            ))}
+            <button type="button" className="table-action" onClick={() => setSizesText('36, 37, 38, 39, 40, 41, 42, 43, 44')}>
+              ATAJO TENIS 36–44
+            </button>
+            <button type="button" className="table-action" onClick={() => setSizesText(SIZES.join(', '))}>
+              ATAJO ROPA S–XL
+            </button>
           </div>
-        </div>
+        </label>
 
         <label className="field">
           <span>IMAGEN (URL o sube un archivo)</span>

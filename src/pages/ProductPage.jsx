@@ -4,6 +4,9 @@ import { fetchProduct } from '../services/catalog';
 import { formatCOP } from '../lib/format';
 import { navigate } from '../hooks/useHashRoute';
 
+// Enlace que se comparte: /p/<id> (api/share.js) trae foto, nombre y precio para el preview de WhatsApp, etc.
+const shareUrl = (product) => `${window.location.origin}/p/${product.id}`;
+
 const SIZE_GUIDE = [
   ['S', '92–96', '76–80', '68'],
   ['M', '97–102', '81–86', '70'],
@@ -16,11 +19,14 @@ export default function ProductPage({ id }) {
   const [product, setProduct] = useState(undefined); // undefined = cargando, null = no existe
   const [size, setSize] = useState('');
   const [message, setMessage] = useState('');
+  const [shareOpen, setShareOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     setProduct(undefined);
     setSize('');
     setMessage('');
+    setShareOpen(false);
     fetchProduct(id)
       .then(setProduct)
       .catch((error) => {
@@ -42,6 +48,8 @@ export default function ProductPage({ id }) {
   }
 
   const soldOut = product.stock <= 0;
+  // La guía de medidas (pecho/cintura/largo) solo aplica a ropa; en tenis (36, 37…) se oculta
+  const isClothing = product.sizes.some((s) => ['S', 'M', 'L', 'XL'].includes(String(s).toUpperCase()));
 
   // Valida talla y agrega a la bolsa. Devuelve true si se agregó.
   const handleAdd = () => {
@@ -57,6 +65,31 @@ export default function ProductPage({ id }) {
 
   const handleBuyNow = () => {
     if (handleAdd()) navigate('/cart');
+  };
+
+  const shareText = `${product.name} — ${formatCOP(product.price)} | AREA 11`;
+
+  // En celular abre el menú nativo de compartir; en escritorio despliega las opciones
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: product.name, text: shareText, url: shareUrl(product) });
+        return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return; // la persona canceló
+      }
+    }
+    setShareOpen((open) => !open);
+  };
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl(product));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      window.prompt('Copia este enlace:', shareUrl(product));
+    }
   };
 
   return (
@@ -79,7 +112,7 @@ export default function ProductPage({ id }) {
 
           <div className="selector-heading">
             <span>SELECCIONA TU TALLA</span>
-            <a href="#guia-tallas">GUÍA DE TALLAS</a>
+            {isClothing && <a href="#guia-tallas">GUÍA DE TALLAS</a>}
           </div>
 
           <div className="size-selector">
@@ -124,6 +157,42 @@ export default function ProductPage({ id }) {
             COMPRAR AHORA
           </button>
 
+          <button type="button" className="button button--outline button--full" onClick={handleShare}>
+            COMPARTIR ↗
+          </button>
+
+          {shareOpen && (
+            <div className="share-row">
+              <a
+                className="table-action"
+                href={`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl(product)}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                WHATSAPP
+              </a>
+              <a
+                className="table-action"
+                href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl(product))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                FACEBOOK
+              </a>
+              <a
+                className="table-action"
+                href={`https://x.com/intent/post?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl(product))}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                X
+              </a>
+              <button type="button" className="table-action" onClick={handleCopy}>
+                {copied ? 'COPIADO ✓' : 'COPIAR ENLACE'}
+              </button>
+            </div>
+          )}
+
           <details className="accordion">
             <summary>DETALLES Y COMPOSICIÓN</summary>
             <p>
@@ -142,7 +211,8 @@ export default function ProductPage({ id }) {
         </div>
       </section>
 
-      {/* Guía de tallas */}
+      {/* Guía de tallas (solo ropa) */}
+      {isClothing && (
       <section className="section size-guide" id="guia-tallas">
         <header className="section-heading section-heading--compact">
           <div>
@@ -180,6 +250,7 @@ export default function ProductPage({ id }) {
           </table>
         </div>
       </section>
+      )}
     </>
   );
 }

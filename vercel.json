@@ -1,0 +1,4 @@
+{
+  "crons": [{ "path": "/api/cron-abandoned", "schedule": "0 13 * * *" }],
+  "rewrites": [{ "source": "/p/:id", "destination": "/api/share?id=:id" }]
+}

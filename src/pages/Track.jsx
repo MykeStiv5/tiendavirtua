@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { trackOrder } from '../services/orders';
 import { useCart } from '../context/CartContext';
 import { formatDateTime } from '../lib/format';
-import { ORDER_STATUSES } from '../config';
+import { FLOW_STATUSES } from '../config';
 
 const STEPS = ['RECIBIDO', 'PAGADO', 'ENVIADO', 'ENTREGADO'];
 
@@ -41,7 +41,7 @@ export default function Track({ params }) {
     search(code);
   };
 
-  const currentIndex = order ? ORDER_STATUSES.indexOf(order.status) : -1;
+  const currentIndex = order ? FLOW_STATUSES.indexOf(order.status) : -1;
 
   return (
     <section className="tracking" id="rastrear">
@@ -106,6 +106,19 @@ export default function Track({ params }) {
             <span className="order-status">{order.status.toUpperCase()}</span>
           </header>
 
+          {order.status === 'Reembolsado' && (
+            <p className="form-message">
+              Este pedido fue reembolsado. El dinero puede tardar en reflejarse según tu medio de pago; si tienes
+              dudas, escríbenos por WhatsApp.
+            </p>
+          )}
+          {order.status === 'Abandonado' && (
+            <p className="form-message">
+              El pago de este pedido no se completó. Si todavía lo quieres, vuelve a tu bolsa o escríbenos por WhatsApp.
+            </p>
+          )}
+
+          {currentIndex >= 0 && (
           <div className="steps">
             {STEPS.map((label, index) => {
               const completed = index <= currentIndex;
@@ -123,6 +136,7 @@ export default function Track({ params }) {
               );
             })}
           </div>
+          )}
         </div>
       )}
     </section>
