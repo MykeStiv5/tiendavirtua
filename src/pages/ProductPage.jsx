@@ -227,10 +227,11 @@ export default function ProductPage({ id }) {
           )}
 
           <details className="accordion">
-            <summary>DETALLES Y COMPOSICIÓN</summary>
+            <summary>¿Quienes Somos?</summary>
             <p>
-              Exterior de algodón pesado. Forro interior transpirable,
-              bolsillos funcionales y cierre frontal reforzado.
+              Nacimos en Bogotá con una misión clara: acercar las mejores tendencias de la moda urbana y los pares más buscados de streetwear a las calles de Colombia.
+              Creemos que unos buenos tenis y las prendas indicadas no son solo ropa; son una forma de expresión, actitud e identidad. Por eso, nos encargamos de seleccionar minuciosamente cada modelo de nuestro catálogo, garantizando calidad, estilo y los acabados que te mereces.
+              Trabajamos día a día para brindarte una experiencia de compra rápida, transparente y segura, con envío directo a tu puerta.
             </p>
           </details>
 
