@@ -4,7 +4,7 @@ import { deleteProduct, saveProduct, uploadProductImage } from '../services/admi
 import { formatNumber } from '../lib/format';
 import { SIZES, SECTIONS, SECTION_SLUGS } from '../config';
 
-const EMPTY = { name: '', description: '', price: '', category_id: '', sections: [...SECTION_SLUGS], sizes: [...SIZES], image_url: '', stock: 0 };
+const EMPTY = { name: '', description: '', price: '', category_id: '', colors: [], sections: [...SECTION_SLUGS], sizes: [...SIZES], image_url: '', stock: 0 };
 const LOW_STOCK = 5;
 
 // Convierte "36, 37, 38.5" o "S M L" en una lista sin repetidos (si son números, las ordena)
@@ -25,6 +25,22 @@ function parseSizes(text) {
 function sectionLabel(sections = []) {
   const names = SECTIONS.filter((s) => sections.includes(s.slug)).map((s) => s.label);
   return names.length ? names.join(' y ') : '—';
+}
+
+// Convierte "Negro, Blanco, Azul claro" en una lista sin repetidos (se separa solo por coma)
+function parseColors(text) {
+  const seen = new Set();
+  return String(text)
+    .split(/[,;]+/)
+    .map((c) => c.trim().replace(/\s+/g, ' '))
+    .filter(Boolean)
+    .map((c) => c.charAt(0).toUpperCase() + c.slice(1))
+    .filter((c) => {
+      const key = c.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 }
 
 export default function ProductsTab({ products, categories, onChange, createRequest }) {
@@ -164,6 +180,7 @@ export default function ProductsTab({ products, categories, onChange, createRequ
 function ProductForm({ product, categories, onClose, onSaved }) {
   const [form, setForm] = useState(product);
   const [sizesText, setSizesText] = useState((product.sizes || []).join(', '));
+  const [colorsText, setColorsText] = useState((product.colors || []).join(', '));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -205,7 +222,7 @@ function ProductForm({ product, categories, onClose, onSaved }) {
     }
     setBusy(true);
     try {
-      await saveProduct({ ...form, sizes });
+      await saveProduct({ ...form, sizes, colors: parseColors(colorsText) });
       onSaved();
     } catch (err) {
       setError(err.message);
@@ -286,6 +303,18 @@ function ProductForm({ product, categories, onClose, onSaved }) {
               ATAJO ROPA S–XL
             </button>
           </div>
+        </label>
+
+        <label className="field">
+          <span>COLORES (opcional, sepáralos con coma)</span>
+          <small className="muted" style={{ fontSize: 11 }}>
+            Si la prenda viene en varios colores, escríbelos: Negro, Blanco, Azul claro. Si tiene un solo color, déjalo vacío.
+          </small>
+          <input
+            value={colorsText}
+            onChange={(e) => setColorsText(e.target.value)}
+            placeholder="Ej: Negro, Blanco, Verde"
+          />
         </label>
 
         <label className="field">

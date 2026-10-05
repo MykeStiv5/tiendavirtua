@@ -365,3 +365,35 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+/* Selector de color (producto) */
+
+.color-selector {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.color-selector input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.color-selector label {
+  min-height: 44px;
+  padding: 0 18px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-line);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.color-selector input:checked + label {
+  color: var(--color-white);
+  border-color: var(--color-ink);
+  background: var(--color-ink);
+}

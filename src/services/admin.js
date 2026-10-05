@@ -30,6 +30,7 @@ export async function saveProduct(product) {
     category_id: product.category_id || null,
     sizes: product.sizes,
     sections: product.sections,
+    colors: product.colors || [],
     image_url: product.image_url || null,
     stock: Number(product.stock),
   };
@@ -76,7 +77,7 @@ export async function deleteCategory(id) {
 export async function fetchOrders() {
   const { data, error } = await supabase
     .from('orders')
-    .select('*, order_items(quantity, size, price, products(name))')
+    .select('*, order_items(quantity, size, color, price, products(name))')
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data;
