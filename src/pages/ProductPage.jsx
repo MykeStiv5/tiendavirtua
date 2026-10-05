@@ -19,6 +19,7 @@ export default function ProductPage({ id }) {
   const [product, setProduct] = useState(undefined); // undefined = cargando, null = no existe
   const [size, setSize] = useState('');
   const [color, setColor] = useState('');
+  const [imgIndex, setImgIndex] = useState(0);
   const [message, setMessage] = useState('');
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -27,6 +28,7 @@ export default function ProductPage({ id }) {
     setProduct(undefined);
     setSize('');
     setColor('');
+    setImgIndex(0);
     setMessage('');
     setShareOpen(false);
     fetchProduct(id)
@@ -51,6 +53,12 @@ export default function ProductPage({ id }) {
 
   const soldOut = product.stock <= 0;
   const colors = product.colors || [];
+
+  // Galería: product.images (la primera es la principal); los productos antiguos solo tienen image_url
+  const gallery = product.images?.length ? product.images : product.image_url ? [product.image_url] : [];
+  const activeIndex = Math.min(imgIndex, Math.max(gallery.length - 1, 0));
+  const goTo = (delta) => setImgIndex((activeIndex + delta + gallery.length) % gallery.length);
+  const pad = (n) => String(n).padStart(2, '0');
   // La guía de medidas (pecho/cintura/largo) solo aplica a ropa; en tenis (36, 37…) se oculta
   const isClothing = product.sizes.some((s) => ['S', 'M', 'L', 'XL'].includes(String(s).toUpperCase()));
 
@@ -104,8 +112,30 @@ export default function ProductPage({ id }) {
       {/* Detalle de producto */}
       <section className="section product-detail" id="detalle-producto">
         <div className="product-detail__gallery">
-          <img src={product.image_url} alt={`${product.name}, vista principal`} />
-          <span className="product-detail__count">01 / 01</span>
+          <img src={gallery[activeIndex]} alt={`${product.name}, foto ${activeIndex + 1}`} />
+
+          {gallery.length > 1 && (
+            <>
+              <button type="button" className="gallery-arrow gallery-arrow--prev" aria-label="Foto anterior" onClick={() => goTo(-1)}>‹</button>
+              <button type="button" className="gallery-arrow gallery-arrow--next" aria-label="Foto siguiente" onClick={() => goTo(1)}>›</button>
+
+              <div className="gallery-thumbs">
+                {gallery.map((url, index) => (
+                  <button
+                    key={`${url}-${index}`}
+                    type="button"
+                    className={index === activeIndex ? 'is-active' : ''}
+                    aria-label={`Ver foto ${index + 1}`}
+                    onClick={() => setImgIndex(index)}
+                  >
+                    <img src={url} alt="" />
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+
+          <span className="product-detail__count">{pad(activeIndex + 1)} / {pad(Math.max(gallery.length, 1))}</span>
         </div>
 
         <div className="product-detail__content">

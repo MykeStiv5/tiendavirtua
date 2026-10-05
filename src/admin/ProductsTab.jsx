@@ -4,7 +4,12 @@ import { deleteProduct, saveProduct, uploadProductImage } from '../services/admi
 import { formatNumber } from '../lib/format';
 import { SIZES, SECTIONS, SECTION_SLUGS } from '../config';
 
-const EMPTY = { name: '', description: '', price: '', category_id: '', colors: [], sections: [...SECTION_SLUGS], sizes: [...SIZES], image_url: '', stock: 0 };
+const EMPTY = { name: '', description: '', price: '', category_id: '', colors: [], sections: [...SECTION_SLUGS], sizes: [...SIZES], image_url: '', images: [], stock: 0 };
+
+const MAX_IMAGES = 8;
+
+// Productos antiguos solo tienen image_url: se muestra como la primera imagen de la galería
+const initialImages = (p) => (p.images?.length ? p.images : p.image_url ? [p.image_url] : []);
 const LOW_STOCK = 5;
 
 // Convierte "36, 37, 38.5" o "S M L" en una lista sin repetidos (si son números, las ordena)
@@ -178,7 +183,8 @@ export default function ProductsTab({ products, categories, onChange, createRequ
 }
 
 function ProductForm({ product, categories, onClose, onSaved }) {
-  const [form, setForm] = useState(product);
+  const [form, setForm] = useState(() => ({ ...product, images: initialImages(product) }));
+  const [newUrl, setNewUrl] = useState('');
   const [sizesText, setSizesText] = useState((product.sizes || []).join(', '));
   const [colorsText, setColorsText] = useState((product.colors || []).join(', '));
   const [busy, setBusy] = useState(false);
@@ -195,12 +201,43 @@ function ProductForm({ product, categories, onClose, onSaved }) {
       };
     });
 
-  const handleFile = async (event) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const addImages = (urls) =>
+    setForm((f) => ({ ...f, images: [...(f.images || []), ...urls].slice(0, MAX_IMAGES) }));
+
+  const removeImage = (index) =>
+    setForm((f) => ({ ...f, images: f.images.filter((_, i) => i !== index) }));
+
+  // Mueve una imagen a la izquierda (-1) o a la derecha (+1); la primera es la principal
+  const moveImage = (index, delta) =>
+    setForm((f) => {
+      const target = index + delta;
+      if (target < 0 || target >= f.images.length) return f;
+      const images = [...f.images];
+      [images[index], images[target]] = [images[target], images[index]];
+      return { ...f, images };
+    });
+
+  const handleAddUrl = () => {
+    const url = newUrl.trim();
+    if (!url) return;
+    addImages([url]);
+    setNewUrl('');
+  };
+
+  // Permite elegir varias fotos a la vez
+  const handleFiles = async (event) => {
+    const files = Array.from(event.target.files || []);
+    event.target.value = '';
+    if (files.length === 0) return;
+    setError('');
     setBusy(true);
     try {
-      set('image_url', await uploadProductImage(file));
+      const room = MAX_IMAGES - (form.images?.length || 0);
+      const urls = [];
+      for (const file of files.slice(0, Math.max(room, 0))) {
+        urls.push(await uploadProductImage(file));
+      }
+      addImages(urls);
     } catch (err) {
       setError('No se pudo subir la imagen: ' + err.message);
     } finally {
@@ -317,13 +354,45 @@ function ProductForm({ product, categories, onClose, onSaved }) {
           />
         </label>
 
-        <label className="field">
-          <span>IMAGEN (URL o sube un archivo)</span>
-          <input value={form.image_url || ''} onChange={(e) => set('image_url', e.target.value)} placeholder="https://…" />
-          <input type="file" accept="image/*" onChange={handleFile} />
-        </label>
+        <div className="field">
+          <span>IMÁGENES (hasta {MAX_IMAGES}; la primera es la principal)</span>
 
-        {form.image_url && <img className="admin-form__preview" src={form.image_url} alt="Vista previa" />}
+          {form.images.length > 0 && (
+            <div className="image-list">
+              {form.images.map((url, index) => (
+                <div key={`${url}-${index}`} className="image-list__item">
+                  <img src={url} alt={`Imagen ${index + 1}`} />
+                  {index === 0 && <em>PRINCIPAL</em>}
+                  <div className="image-list__actions">
+                    <button type="button" aria-label="Mover a la izquierda" disabled={index === 0} onClick={() => moveImage(index, -1)}>◀</button>
+                    <button type="button" aria-label="Mover a la derecha" disabled={index === form.images.length - 1} onClick={() => moveImage(index, 1)}>▶</button>
+                    <button type="button" aria-label="Quitar imagen" onClick={() => removeImage(index)}>×</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {form.images.length < MAX_IMAGES && (
+            <>
+              <div className="image-add">
+                <input
+                  value={newUrl}
+                  onChange={(e) => setNewUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddUrl();
+                    }
+                  }}
+                  placeholder="Pega la URL de una imagen https://…"
+                />
+                <button type="button" className="table-action" onClick={handleAddUrl}>AGREGAR</button>
+              </div>
+              <input type="file" accept="image/*" multiple onChange={handleFiles} />
+            </>
+          )}
+        </div>
 
         {error && <p className="form-message form-message--error">{error}</p>}
 

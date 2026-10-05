@@ -31,7 +31,9 @@ export async function saveProduct(product) {
     sizes: product.sizes,
     sections: product.sections,
     colors: product.colors || [],
-    image_url: product.image_url || null,
+    // La primera imagen de la galería es la principal (la que usan tarjetas, bolsa y WhatsApp)
+    images: product.images || [],
+    image_url: (product.images && product.images[0]) || null,
     stock: Number(product.stock),
   };
 
