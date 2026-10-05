@@ -155,7 +155,7 @@ function OrderRow({ order, onSaved }) {
       <td>
         {order.order_items.map((item, index) => (
           <div key={index} className="muted">
-            {item.quantity}× {item.products?.name || 'Producto eliminado'} ({item.size})
+            {item.quantity}× {item.products?.name || 'Producto eliminado'} ({item.size}{item.color ? ` · ${item.color}` : ''})
           </div>
         ))}
       </td>

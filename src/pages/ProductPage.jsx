@@ -18,6 +18,7 @@ export default function ProductPage({ id }) {
   const { addItem } = useCart();
   const [product, setProduct] = useState(undefined); // undefined = cargando, null = no existe
   const [size, setSize] = useState('');
+  const [color, setColor] = useState('');
   const [message, setMessage] = useState('');
   const [shareOpen, setShareOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -25,6 +26,7 @@ export default function ProductPage({ id }) {
   useEffect(() => {
     setProduct(undefined);
     setSize('');
+    setColor('');
     setMessage('');
     setShareOpen(false);
     fetchProduct(id)
@@ -48,6 +50,7 @@ export default function ProductPage({ id }) {
   }
 
   const soldOut = product.stock <= 0;
+  const colors = product.colors || [];
   // La guía de medidas (pecho/cintura/largo) solo aplica a ropa; en tenis (36, 37…) se oculta
   const isClothing = product.sizes.some((s) => ['S', 'M', 'L', 'XL'].includes(String(s).toUpperCase()));
 
@@ -58,7 +61,11 @@ export default function ProductPage({ id }) {
       setMessage('Selecciona una talla para continuar.');
       return false;
     }
-    addItem(product, size, 1);
+    if (colors.length > 0 && !color) {
+      setMessage('Selecciona un color para continuar.');
+      return false;
+    }
+    addItem(product, size, 1, color);
     setMessage('Producto agregado a tu bolsa ✓');
     return true;
   };
@@ -132,6 +139,32 @@ export default function ProductPage({ id }) {
               </span>
             ))}
           </div>
+
+          {colors.length > 0 && (
+            <>
+              <div className="selector-heading">
+                <span>SELECCIONA TU COLOR</span>
+              </div>
+
+              <div className="color-selector">
+                {colors.map((c, i) => (
+                  <span key={c} style={{ display: 'contents' }}>
+                    <input
+                      type="radio"
+                      name="color"
+                      id={`color-${i}`}
+                      checked={color === c}
+                      onChange={() => {
+                        setColor(c);
+                        setMessage('');
+                      }}
+                    />
+                    <label htmlFor={`color-${i}`}>{c.toUpperCase()}</label>
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
 
           {message && (
             <p className={`form-message${message.includes('✓') ? ' form-message--success' : ' form-message--error'}`}>

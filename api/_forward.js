@@ -47,7 +47,7 @@ function normalizeItems(rawItems) {
 
     return {
       id: String(raw?.productId ?? raw?.id ?? `item-${index + 1}`),
-      title: raw?.size ? `${name} — Talla ${raw.size}` : name,
+      title: raw?.size ? `${name} — Talla ${raw.size}${raw?.color ? ` — ${raw.color}` : ''}` : name,
       quantity,
       unit_price: unitPrice,
       currency_id: 'COP', // obligatorio para Colombia
@@ -192,6 +192,7 @@ export async function createPreferenceForOrder(orderId, token, options = {}) {
         productId: i.product_id,
                 name: i.products?.name || 'Producto',
         size: i.size,
+        color: i.color,
         quantity: i.quantity,
         price: i.price,
       })),

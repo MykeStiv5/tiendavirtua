@@ -26,7 +26,7 @@ function itemsTable(order) {
   const rows = (order.order_items || [])
     .map(
       (i) =>
-        `<tr><td style="padding:6px 0">${esc(i.quantity)}× ${esc(i.products?.name || 'Producto')} (talla ${esc(i.size)})</td>` +
+        `<tr><td style="padding:6px 0">${esc(i.quantity)}× ${esc(i.products?.name || 'Producto')} (talla ${esc(i.size)}${i.color ? `, ${esc(i.color)}` : ''})</td>` +
         `<td style="padding:6px 0;text-align:right">${cop(i.price * i.quantity)}</td></tr>`,
     )
     .join('');

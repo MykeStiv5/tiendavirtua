@@ -11,4 +11,4 @@ export function getAdminClient() {
 
 export const ORDER_SELECT =
   'id, order_code, total, shipping_cost, status, client_info, created_at, ' +
-  'order_items(quantity, size, price, product_id, products(name))';
+  'order_items(quantity, size, color, price, product_id, products(name))';

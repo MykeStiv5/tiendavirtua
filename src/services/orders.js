@@ -8,6 +8,7 @@ export async function createOrder(clientInfo, cartItems) {
     product_id: i.productId,
     quantity: i.quantity,
     size: i.size,
+    color: i.color || null,
   }));
 
   const { data, error } = await supabase.rpc('create_order', {
@@ -29,7 +30,7 @@ export async function trackOrder(code) {
 export function buildWhatsAppUrl(items, total, client = {}) {
   const lines = items.map(
     (i, idx) =>
-      `${idx + 1}. ${i.name} — Talla ${i.size} x${i.quantity} — ${formatCOP(i.price * i.quantity)}`,
+      `${idx + 1}. ${i.name} — Talla ${i.size}${i.color ? ` — Color ${i.color}` : ''} x${i.quantity} — ${formatCOP(i.price * i.quantity)}`,
   );
 
   const message = [

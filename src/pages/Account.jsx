@@ -264,7 +264,7 @@ function OrderCard({ order }) {
       <div style={{ padding: '16px 0' }}>
         {order.order_items.map((item, index) => (
           <p key={index} className="muted">
-            {item.quantity}× {item.products?.name || 'Producto'} (talla {item.size}) — {formatCOP(item.price * item.quantity)}
+            {item.quantity}× {item.products?.name || 'Producto'} (talla {item.size}{item.color ? `, ${item.color}` : ''}) — {formatCOP(item.price * item.quantity)}
           </p>
         ))}
         <p className="muted">

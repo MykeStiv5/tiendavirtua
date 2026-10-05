@@ -115,7 +115,7 @@ export default function Cart({ params }) {
                     </button>
                   </div>
 
-                  <span>TALLA {item.size}</span>
+                  <span>TALLA {item.size}{item.color ? ` · ${item.color.toUpperCase()}` : ''}</span>
                   <strong>{formatCOP(item.price * item.quantity)}</strong>
 
                   <div className="quantity-selector">

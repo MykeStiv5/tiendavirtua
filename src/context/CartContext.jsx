@@ -25,15 +25,15 @@ export function CartProvider({ children }) {
   }, [items]);
 
   const value = useMemo(() => {
-    const keyOf = (productId, size) => `${productId}__${size}`;
+    const keyOf = (productId, size, color) => `${productId}__${size}__${color || ''}`;
 
     return {
       items,
       count: items.reduce((sum, i) => sum + i.quantity, 0),
       subtotal: items.reduce((sum, i) => sum + i.price * i.quantity, 0),
 
-      addItem(product, size, quantity = 1) {
-        const key = keyOf(product.id, size);
+      addItem(product, size, quantity = 1, color = '') {
+        const key = keyOf(product.id, size, color);
         setItems((current) => {
           const existing = current.find((i) => i.key === key);
           if (existing) {
@@ -51,6 +51,7 @@ export function CartProvider({ children }) {
               image: product.image_url,
               stock: product.stock,
               size,
+              color: color || '',
               quantity: Math.min(quantity, product.stock),
             },
           ];
