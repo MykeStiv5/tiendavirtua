@@ -56,7 +56,7 @@ export default function Home({ section = 'all' }) {
         <span className="hero__counter">01 / 04</span>
 
         <div className="hero__content">
-          <span className="eyebrow eyebrow--light">DROP 04 — BOGOTÁ, 2025</span>
+          <span className="eyebrow eyebrow--light">DROP 01 — BOGOTÁ, 2026</span>
 
           <h1>
             FUERA DE<br />
