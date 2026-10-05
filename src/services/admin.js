@@ -29,6 +29,7 @@ export async function saveProduct(product) {
     price: Number(product.price),
     category_id: product.category_id || null,
     sizes: product.sizes,
+    sections: product.sections,
     image_url: product.image_url || null,
     stock: Number(product.stock),
   };

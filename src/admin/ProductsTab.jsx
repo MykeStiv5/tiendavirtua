@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react';
 import Modal from './Modal';
 import { deleteProduct, saveProduct, uploadProductImage } from '../services/admin';
 import { formatNumber } from '../lib/format';
-import { SIZES } from '../config';
+import { SIZES, SECTIONS, SECTION_SLUGS } from '../config';
 
-const EMPTY = { name: '', description: '', price: '', category_id: '', sizes: [...SIZES], image_url: '', stock: 0 };
+const EMPTY = { name: '', description: '', price: '', category_id: '', sections: [...SECTION_SLUGS], sizes: [...SIZES], image_url: '', stock: 0 };
 const LOW_STOCK = 5;
 
 // Convierte "36, 37, 38.5" o "S M L" en una lista sin repetidos (si son números, las ordena)
@@ -19,6 +19,12 @@ function parseSizes(text) {
   ];
   const allNumeric = unique.every((s) => /^\d+(\.\d+)?$/.test(s));
   return allNumeric ? unique.sort((a, b) => parseFloat(a) - parseFloat(b)) : unique;
+}
+
+// "Hombre", "Mujer" o "Hombre y Mujer" (unisex)
+function sectionLabel(sections = []) {
+  const names = SECTIONS.filter((s) => sections.includes(s.slug)).map((s) => s.label);
+  return names.length ? names.join(' y ') : '—';
 }
 
 export default function ProductsTab({ products, categories, onChange, createRequest }) {
@@ -90,6 +96,7 @@ export default function ProductsTab({ products, categories, onChange, createRequ
               <tr>
                 <th>PRODUCTO</th>
                 <th>CATEGORÍA</th>
+                <th>SECCIÓN</th>
                 <th>PRECIO</th>
                 <th>STOCK</th>
                 <th>ESTADO</th>
@@ -113,6 +120,7 @@ export default function ProductsTab({ products, categories, onChange, createRequ
                       </div>
                     </td>
                     <td>{product.categories?.name || '—'}</td>
+                    <td>{sectionLabel(product.sections)}</td>
                     <td>$ {formatNumber(product.price)}</td>
                     <td>{product.stock} uds.</td>
                     <td>
@@ -161,6 +169,15 @@ function ProductForm({ product, categories, onClose, onSaved }) {
 
   const set = (name, value) => setForm((f) => ({ ...f, [name]: value }));
 
+  const toggleSection = (slug) =>
+    setForm((f) => {
+      const current = f.sections || [];
+      return {
+        ...f,
+        sections: current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug],
+      };
+    });
+
   const handleFile = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -178,6 +195,10 @@ function ProductForm({ product, categories, onClose, onSaved }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const sizes = parseSizes(sizesText);
+    if (!form.sections?.length) {
+      setError('Elige en qué sección se publica: Hombre, Mujer o ambas.');
+      return;
+    }
     if (sizes.length === 0) {
       setError('Escribe al menos una talla (por ejemplo: 36, 37, 38).');
       return;
@@ -217,11 +238,30 @@ function ProductForm({ product, categories, onClose, onSaved }) {
           </label>
         </div>
 
+        <div className="field">
+          <span>¿DÓNDE SE PUBLICA?</span>
+          <div className="check-row">
+            {SECTIONS.map((s) => (
+              <label key={s.slug} className="check-option">
+                <input
+                  type="checkbox"
+                  checked={(form.sections || []).includes(s.slug)}
+                  onChange={() => toggleSection(s.slug)}
+                />
+                {s.label.toUpperCase()}
+              </label>
+            ))}
+          </div>
+          <small className="muted" style={{ fontSize: 11 }}>
+            Marca las dos si es unisex: aparecerá en Hombre y en Mujer.
+          </small>
+        </div>
+
         <label className="field">
           <span>CATEGORÍA</span>
           <select value={form.category_id} onChange={(e) => set('category_id', e.target.value)}>
             <option value="">Sin categoría</option>
-            {categories.map((c) => (
+            {categories.filter((c) => !SECTION_SLUGS.includes(c.slug)).map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
             ))}
           </select>

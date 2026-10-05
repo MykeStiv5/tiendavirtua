@@ -15,7 +15,9 @@ export default function App() {
 
   // Scroll: a un ancla (#productos, #guia-tallas) o arriba al cambiar de página
   useEffect(() => {
-    const id = hash && !hash.startsWith('#/') ? hash.slice(1) : '';
+    // #/hombre y #/mujer abren la tienda directo en el catálogo
+    const isSection = path === '/hombre' || path === '/mujer';
+    const id = hash && !hash.startsWith('#/') ? hash.slice(1) : isSection ? 'productos' : '';
     const frame = requestAnimationFrame(() => {
       const target = id && document.getElementById(id);
       if (target) target.scrollIntoView({ behavior: 'smooth' });
@@ -32,6 +34,8 @@ export default function App() {
   else if (path === '/track') page = <Track params={params} />;
   else if (path === '/account') page = <Account />;
   else if (path.startsWith('/product/')) page = <ProductPage id={path.split('/')[2]} />;
+  else if (path === '/hombre') page = <Home section="hombre" />;
+  else if (path === '/mujer') page = <Home section="mujer" />;
   else page = <Home />;
 
   return (

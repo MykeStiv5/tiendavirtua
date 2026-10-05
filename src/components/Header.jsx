@@ -30,8 +30,8 @@ export default function Header() {
         aria-label="Navegación principal"
       >
         <a href="#productos" onClick={close}>NUEVO</a>
-        <a href="#productos" onClick={close}>HOMBRE</a>
-        <a href="#productos" onClick={close}>MUJER</a>
+        <a href="#/hombre" onClick={close}>HOMBRE</a>
+        <a href="#/mujer" onClick={close}>MUJER</a>
         <a href="#productos" onClick={close}>ACCESORIOS</a>
         <a href="#/track" className="navigation__mobile-only" onClick={close}>RASTREAR PEDIDO</a>
         <a href="#/account" className="navigation__mobile-only" onClick={close}>MI CUENTA</a>

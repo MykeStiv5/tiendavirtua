@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import ProductCard from '../components/ProductCard';
 import { fetchCategories, fetchProducts } from '../services/catalog';
+import { SECTIONS, SECTION_SLUGS } from '../config';
 
-export default function Home() {
+export default function Home({ section = 'all' }) {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [activeSlug, setActiveSlug] = useState('all');
@@ -22,13 +23,23 @@ export default function Home() {
   }, []);
 
   // Filtro dinámico por categoría
+  // Hombre / Mujer ya no son categorías: son secciones (se eligen arriba)
+  const typeCategories = useMemo(
+    () => categories.filter((c) => !SECTION_SLUGS.includes(c.slug)),
+    [categories],
+  );
+
   const visibleProducts = useMemo(
     () =>
-      activeSlug === 'all'
-        ? products
-        : products.filter((p) => p.categories?.slug === activeSlug),
-    [products, activeSlug],
+      products.filter(
+        (p) =>
+          (section === 'all' || (p.sections || []).includes(section)) &&
+          (activeSlug === 'all' || p.categories?.slug === activeSlug),
+      ),
+    [products, section, activeSlug],
   );
+
+  const sectionTitle = SECTIONS.find((s) => s.slug === section)?.label;
 
   return (
     <>
@@ -77,7 +88,7 @@ export default function Home() {
         <header className="section-heading">
           <div>
             <span className="eyebrow">DROP ACTUAL / 04</span>
-            <h2>LO ÚLTIMO</h2>
+            <h2>{sectionTitle ? sectionTitle.toUpperCase() : 'LO ÚLTIMO'}</h2>
           </div>
 
           <p>
@@ -85,6 +96,21 @@ export default function Home() {
             Diseñado para moverse.
           </p>
         </header>
+
+        <nav className="section-tabs" aria-label="Sección de la tienda">
+          <a href="#/" className={`section-tab${section === 'all' ? ' section-tab--active' : ''}`}>
+            TODO
+          </a>
+          {SECTIONS.map((s) => (
+            <a
+              key={s.slug}
+              href={`#/${s.slug}`}
+              className={`section-tab${section === s.slug ? ' section-tab--active' : ''}`}
+            >
+              {s.label.toUpperCase()}
+            </a>
+          ))}
+        </nav>
 
         <nav className="categories" aria-label="Categorías de productos">
           <a
@@ -98,7 +124,7 @@ export default function Home() {
             Todo
           </a>
 
-          {categories.map((category) => (
+          {typeCategories.map((category) => (
             <a
               key={category.id}
               href="#productos"
