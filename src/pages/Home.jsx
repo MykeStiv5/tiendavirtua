@@ -63,7 +63,7 @@ export default function Home({ section = 'all' }) {
             CONTEXTO.
           </h1>
 
-          <p>Uniformes para una ciudad que nunca baja el ritmo.</p>
+          <p>Elegancia y actitud urbana en un solo lugar. Envío gratis a Bogotá.</p>
 
           <a href="#productos" className="button button--light">
             VER COLECCIÓN
@@ -74,26 +74,25 @@ export default function Home({ section = 'all' }) {
 
       {/* Cinta */}
       <section className="ticker" aria-label="Características de la tienda">
-        <span>HECHO EN COLOMBIA</span>
+        <span>ENVIOS NACIONALES</span>
         <i>✦</i>
-        <span>EDICIÓN LIMITADA</span>
+        <span>PRENDAS DE ALTA CALIDAD</span>
         <i>✦</i>
-        <span>ENVÍOS NACIONALES</span>
+        <span>DROP 01</span>
         <i>✦</i>
-        <span>CAMBIOS FÁCILES</span>
+        <span>COMPRAS 100% SEGURAS</span>
       </section>
 
       {/* Catálogo */}
       <section className="section catalog" id="productos">
         <header className="section-heading">
           <div>
-            <span className="eyebrow">DROP ACTUAL / 04</span>
+            <span className="eyebrow">DROP ACTUAL / 01</span>
             <h2>{sectionTitle ? sectionTitle.toUpperCase() : 'LO ÚLTIMO'}</h2>
           </div>
 
           <p>
-            Piezas funcionales, siluetas amplias y materiales resistentes.
-            Diseñado para moverse.
+           "Selección exclusiva de pares y prendas de alta gama. 100% garantizadas."
           </p>
         </header>
 
@@ -168,13 +167,12 @@ export default function Home({ section = 'all' }) {
         </div>
 
         <div className="editorial__content">
-          <span className="eyebrow eyebrow--light">MANIFIESTO 001</span>
+          <span className="eyebrow eyebrow--light">ICE STYLE 01</span>
 
           <h2>LA CALLE NO PIDE PERMISO.</h2>
 
           <p>
-            Diseñamos prendas que se sienten tan bien en movimiento como se
-            ven en reposo. Sin temporadas. Sin ruido. Solo intención.
+            Prendas exclusivas, con la seguridad de que no son lo mismo de siempre.
           </p>
 
           <a href="#/" className="text-link text-link--light">
