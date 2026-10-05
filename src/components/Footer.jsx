@@ -37,21 +37,21 @@ export default function Footer() {
           <strong>11</strong>
         </a>
 
-        <p>Streetwear funcional diseñado y producido en Bogotá.</p>
+        <p>Streetwear del verdadero, porque pensamos como si fuera para nosotros</p>
       </div>
 
       <div className="footer__column">
         <span>EXPLORA</span>
         <a href="#productos">Nuevo</a>
         <a href="#productos">Colecciones</a>
-        <a href="#/">Archivo</a>
+        <a href="#/">ICE BIG</a>
       </div>
 
       <div className="footer__column">
         <span>AYUDA</span>
         <a href="#/track">Rastrear pedido</a>
         <a href="#/">Envíos y cambios</a>
-        <a href="#/">Contacto</a>
+        <a href="#/">Contacto 304-340-97-43</a>
         <a href="#/admin">Administración</a>
       </div>
 
